@@ -10,7 +10,7 @@ export default class RandomMoveSelector implements MoveSelector{
         const moves = chess.moves();
 
         if (moves.length > 0) {
-            const randomMove = moves[Math.floor(Math.random() * (moves.length + 1))];
+            const randomMove = moves[Math.floor(Math.random() * (moves.length))];
             return randomMove;
         }
         
