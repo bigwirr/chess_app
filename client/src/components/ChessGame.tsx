@@ -3,6 +3,7 @@ import Chessboard from 'chessboardjsx';
 import ChessBrain, { BLACK, Color, WHITE } from '../chessbrain/ChessBrain';
 import RandomMoveSelector from '../chessbrain/RandomMoveSelector';
 import { GameStatus, GameStatusDisplay } from './GameStatus';
+import PromotionSelector, { PromoteToPiece } from './PromotionSelector';
 
 function randomColor(): Color {
     return Math.floor(Math.random() * (2)) == 0 ? WHITE : BLACK;
@@ -15,14 +16,26 @@ export const ChessGame: React.FC = () => {
     const [canMove, setCanMove] = useState(color == WHITE);
     const [gameStatus, setGameStatus] = useState<GameStatus>(GameStatus.live);
     const [winner, setWinner] = useState<Color | null>(null);
+    const [needToPromote, setNeedToPromote] = useState(false);
+    const [moveAfterPromotion, setMoveAfterPromotion] = useState<any>(null);
 
     const handleMove = (move: any) => {
-        if (!canMove) { return; }
-        if (chess.isValidMove(move)) {
+        if (!canMove || needToPromote) { return; }
+        if (chess.isPromotion(move)) {
+            setCanMove(false);
+            setMoveAfterPromotion(move);
+            setNeedToPromote(true);
+            return;
+        }
+        handleMoveWithPromotion(move);
+    }  
+
+    const handleMoveWithPromotion = (move: any, promotion?: PromoteToPiece) => {
+        if (chess.isValidMove(move, promotion)) {
             updateGameState(false);
             makeComputerMove();
         }
-    }   
+    }
 
     const updateGameState = (canMove: boolean) => {
         setFen(chess.getFen())
@@ -39,6 +52,16 @@ export const ChessGame: React.FC = () => {
         300);
     }
 
+    const onPromotionSelected = (piece: PromoteToPiece) => {
+        setNeedToPromote(false);
+        handleMoveWithPromotion(moveAfterPromotion, piece);
+    }
+
+    const promotionSelector = !needToPromote ? null :
+        <PromotionSelector
+            onPieceSelected={onPromotionSelected}
+        />;
+
     if (chess.waitingOnFirstMove()) {
         makeComputerMove();
     }
@@ -54,6 +77,7 @@ export const ChessGame: React.FC = () => {
                 winner={winner ?? undefined}
                 gameStatus={gameStatus}
             />
+            {promotionSelector}
         </div>
     );
 }

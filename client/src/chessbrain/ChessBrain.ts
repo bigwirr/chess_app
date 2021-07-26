@@ -1,5 +1,6 @@
 import {ChessInstance, Piece, ShortMove, Square} from 'chess.js';
 import { GameStatus } from '../components/GameStatus';
+import { PromoteToPiece } from '../components/PromotionSelector';
 
 const startingPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -66,12 +67,12 @@ export default class ChessBrain {
         this.__updateGameState(this.__computerColor());
     }
 
-    public isValidMove(move: Move): boolean {
+    public isValidMove(move: Move, promotion?: PromoteToPiece): boolean {
         return this.__isValidMove(            
             {
                 from: move.sourceSquare,
                 to: move.targetSquare,
-                promotion: "q"
+                promotion: promotion,
             });
     }
 
@@ -81,10 +82,21 @@ export default class ChessBrain {
         return isValid;
     }
 
-    private __isPromotion(move: ShortMove) {
+    private __moveToShortMove(move: Move): ShortMove {
+        return {
+            from: move.sourceSquare,
+            to: move.targetSquare,
+        }
+    }
+
+    public isPromotion(move: Move): boolean {
+        return this.___isPromotion(this.__moveToShortMove(move));
+    }
+
+    private ___isPromotion(move: ShortMove): boolean {
         const piece = this.__chess.get(move.from);
         if (!ChessBrain.__isPawn(piece)) {
-            return;
+            return false;
         }
 
         if (piece?.color === BLACK) {
@@ -113,7 +125,7 @@ export default class ChessBrain {
             return;
         }
 
-        if (this.__chess.in_draw()) {
+        if (this.__chess.in_draw() || this.__chess.in_threefold_repetition()) {
             this.__gameStatus = GameStatus.draw;
             return;
         }
