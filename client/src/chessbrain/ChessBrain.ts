@@ -25,14 +25,21 @@ export default class ChessBrain {
     private __nextMoveSelector: MoveSelector;
     private __gameStatus: GameStatus;
     private __winner: Color | null;
+    private __playerColor: Color;
+    private __waitingOnFirstMove = false;
 
-    public constructor(moveSelector: MoveSelector) {
+    public constructor(moveSelector: MoveSelector, playerColor: Color) {
         this.__chess = new Chess(startingPosition);
         this.__nextMoveSelector = moveSelector;
         this.__gameStatus = GameStatus.live;
         this.__winner = null;
+        this.__playerColor = playerColor;
+        this.__waitingOnFirstMove = playerColor == BLACK;
     }
 
+    public waitingOnFirstMove(): boolean {
+        return this.__waitingOnFirstMove;
+    }
     public getFen(): string {
         return this.__chess.fen();
     }
@@ -46,6 +53,8 @@ export default class ChessBrain {
     }
 
     public makeNextMove() {
+        if (this.__winner) { return; }
+        this.__waitingOnFirstMove = false;
         const nextMove = this.__nextMoveSelector.getNextMove(this.getFen());
         if (nextMove) {
             this.__makeMove(nextMove);
@@ -54,7 +63,7 @@ export default class ChessBrain {
 
     private __makeMove(move: string) {
         this.__chess.move(move);
-        this.__updateGameState(BLACK);
+        this.__updateGameState(this.__computerColor());
     }
 
     public isValidMove(move: Move): boolean {
@@ -68,7 +77,7 @@ export default class ChessBrain {
 
     private __isValidMove(move: ShortMove): boolean {
         const isValid = !!this.__chess.move(move);
-        this.__updateGameState(WHITE);
+        this.__updateGameState(this.__playerColor);
         return isValid;
     }
 
@@ -109,4 +118,8 @@ export default class ChessBrain {
             return;
         }
     }
+
+    private __computerColor(): Color{
+        return this.__playerColor == WHITE ? BLACK : WHITE;
+    } 
 }
