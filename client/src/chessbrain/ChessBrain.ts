@@ -1,4 +1,5 @@
 import {ChessInstance, Piece, ShortMove, Square} from 'chess.js';
+import { GameStatus } from '../components/GameStatus';
 
 const startingPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -14,22 +15,34 @@ export interface Move {
     piece: Piece,
 }
 
-const BLACK = "b";
-const WHITE = "w";
-type Color = "b" | "w";
+export const BLACK = "b";
+export const WHITE = "w";
+export type Color = "b" | "w";
 
 
 export default class ChessBrain {
     private __chess: ChessInstance;
     private __nextMoveSelector: MoveSelector;
+    private __gameStatus: GameStatus;
+    private __winner: Color | null;
 
     public constructor(moveSelector: MoveSelector) {
         this.__chess = new Chess(startingPosition);
         this.__nextMoveSelector = moveSelector;
+        this.__gameStatus = GameStatus.live;
+        this.__winner = null;
     }
 
     public getFen(): string {
         return this.__chess.fen();
+    }
+
+    public getStatus(): GameStatus {
+        return this.__gameStatus;
+    }
+
+    public getWinner(): Color | null {
+        return this.__winner;
     }
 
     public makeNextMove() {
@@ -41,6 +54,7 @@ export default class ChessBrain {
 
     private __makeMove(move: string) {
         this.__chess.move(move);
+        this.__updateGameState(BLACK);
     }
 
     public isValidMove(move: Move): boolean {
@@ -53,7 +67,9 @@ export default class ChessBrain {
     }
 
     private __isValidMove(move: ShortMove): boolean {
-        return !!this.__chess.move(move);
+        const isValid = !!this.__chess.move(move);
+        this.__updateGameState(WHITE);
+        return isValid;
     }
 
     private __isPromotion(move: ShortMove) {
@@ -74,5 +90,23 @@ export default class ChessBrain {
     private static __isPawn(piece: Piece | null) {
         if (!piece) { return false; }
         return piece.type === "p";
+    }
+
+    private __updateGameState(toMove: Color) {
+        if (this.__chess.in_checkmate()) {
+            this.__winner = toMove;
+            this.__gameStatus = GameStatus.checkmate;
+            return;
+        }
+
+        if (this.__chess.in_stalemate()) {
+            this.__gameStatus = GameStatus.stalemate;
+            return;
+        }
+
+        if (this.__chess.in_draw()) {
+            this.__gameStatus = GameStatus.draw;
+            return;
+        }
     }
 }
