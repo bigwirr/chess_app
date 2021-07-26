@@ -30,10 +30,15 @@ if (process.env.NODE_ENV === 'production' || config.NODE_ENV === 'production') {
  *                               Register all routes
  ***********************************************************************************/
 
-getFilesWithKeyword('router', __dirname + '/app').forEach((file: string) => {
-  const { router } = require(file);
-  app.use('/', router);
-})
+import { router } from "./app/move-validation.router";
+
+app.use("/", router);
+
+// getFilesWithKeyword('router', __dirname + '/app').forEach((file: string) => {
+//   const { router } = require(file);
+//   app.use('/', router);
+//   app.use())
+// })
 /************************************************************************************
  *                               Express Error Handling
  ***********************************************************************************/
