@@ -14,6 +14,11 @@ export interface Move {
     piece: Piece,
 }
 
+const BLACK = "b";
+const WHITE = "w";
+type Color = "b" | "w";
+
+
 export default class ChessBrain {
     private __chess: ChessInstance;
     private __nextMoveSelector: MoveSelector;
@@ -49,5 +54,25 @@ export default class ChessBrain {
 
     private __isValidMove(move: ShortMove): boolean {
         return !!this.__chess.move(move);
+    }
+
+    private __isPromotion(move: ShortMove) {
+        const piece = this.__chess.get(move.from);
+        if (!ChessBrain.__isPawn(piece)) {
+            return;
+        }
+
+        if (piece?.color === BLACK) {
+            return move.to.charAt(1) === '1';
+        }
+        else if (piece?.color === WHITE) {
+            return move.to.charAt(1) === '8';
+        }
+        return false;
+    }
+
+    private static __isPawn(piece: Piece | null) {
+        if (!piece) { return false; }
+        return piece.type === "p";
     }
 }
