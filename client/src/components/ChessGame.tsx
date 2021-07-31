@@ -4,6 +4,7 @@ import ChessBrain, { BLACK, Color, WHITE } from '../chessbrain/ChessBrain';
 import RandomMoveSelector from '../chessbrain/RandomMoveSelector';
 import { GameStatus, GameStatusDisplay } from './GameStatus';
 import PromotionSelector, { PromoteToPiece } from './PromotionSelector';
+import Timer from './Timer';
 
 function randomColor(): Color {
     return Math.floor(Math.random() * (2)) == 0 ? WHITE : BLACK;
@@ -18,6 +19,8 @@ export const ChessGame: React.FC = () => {
     const [winner, setWinner] = useState<Color | null>(null);
     const [needToPromote, setNeedToPromote] = useState(false);
     const [moveAfterPromotion, setMoveAfterPromotion] = useState<any>(null);
+    const [p1MoveCount, setP1MoveCount] = useState(0);
+    const [p2MoveCount, setP2MoveCount] = useState(0);
 
     const handleMove = (move: any) => {
         if (!canMove || needToPromote) { return; }
@@ -38,10 +41,20 @@ export const ChessGame: React.FC = () => {
     }
 
     const updateGameState = (canMove: boolean) => {
-        setFen(chess.getFen())
+        setFen(chess.getFen());
         setGameStatus(chess.getStatus());
         setWinner(chess.getWinner());
         setCanMove(canMove);
+        updateMoveCounts(!canMove)
+    }
+
+    const updateMoveCounts = (playerMoved: boolean) => {
+        if (playerMoved) {
+            setP1MoveCount(p1MoveCount + 1);
+        }
+        else {
+            setP2MoveCount(p2MoveCount + 1);
+        }
     }
 
     const makeComputerMove = () => {
@@ -66,8 +79,14 @@ export const ChessGame: React.FC = () => {
         makeComputerMove();
     }
 
+    const isPlayerTurn = canMove || needToPromote;
+
     return (
         <div>
+            <Timer 
+                startTimeMinutes={10} 
+                active={!isPlayerTurn}
+            />
             <Chessboard 
                 position={fen}
                 onDrop={(move) => handleMove(move)}
@@ -76,6 +95,10 @@ export const ChessGame: React.FC = () => {
             <GameStatusDisplay 
                 winner={winner ?? undefined}
                 gameStatus={gameStatus}
+            />
+            <Timer 
+                startTimeMinutes={10}
+                active={isPlayerTurn}
             />
             {promotionSelector}
         </div>
