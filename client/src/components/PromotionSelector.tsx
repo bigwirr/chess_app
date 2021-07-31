@@ -1,6 +1,3 @@
-import { Piece } from "chessboardjsx";
-import { isPropertySignature } from "typescript";
-
 export type PromoteToPiece = "q" | "n" | "r" | "b";
 
 interface PromotionSelectorProps {

@@ -27,10 +27,10 @@ export const ChessGame: React.FC = () => {
             setNeedToPromote(true);
             return;
         }
-        handleMoveWithPromotion(move);
+        handleMoveInner(move);
     }  
 
-    const handleMoveWithPromotion = (move: any, promotion?: PromoteToPiece) => {
+    const handleMoveInner = (move: any, promotion?: PromoteToPiece) => {
         if (chess.isValidMove(move, promotion)) {
             updateGameState(false);
             makeComputerMove();
@@ -54,7 +54,7 @@ export const ChessGame: React.FC = () => {
 
     const onPromotionSelected = (piece: PromoteToPiece) => {
         setNeedToPromote(false);
-        handleMoveWithPromotion(moveAfterPromotion, piece);
+        handleMoveInner(moveAfterPromotion, piece);
     }
 
     const promotionSelector = !needToPromote ? null :
