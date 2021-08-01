@@ -6,7 +6,7 @@ import { RandomComputerGame } from './components/RandomComputerGame';
 class App extends Component {
   render() { 
     return (
-      <div className="Chessboard">
+      <div className="chessGame">
         <RandomComputerGame />
       </div>
     );

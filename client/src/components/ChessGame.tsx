@@ -4,6 +4,7 @@ import ChessBrain, { BLACK, Color, MoveSelector, WHITE } from '../chessbrain/Che
 import { GameStatus, GameStatusDisplay } from './GameStatus';
 import PromotionSelector, { PromoteToPiece } from './PromotionSelector';
 import Timer, { TimeSettings } from './Timer';
+import Modal from './Modal';
 
 export function randomColor(): Color {
     return Math.floor(Math.random() * (2)) == 0 ? WHITE : BLACK;
@@ -26,6 +27,7 @@ export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
     const [moveAfterPromotion, setMoveAfterPromotion] = useState<any>(null);
     const [p1MoveCount, setP1MoveCount] = useState(0);
     const [p2MoveCount, setP2MoveCount] = useState(0);
+    const [showGameStatus, setShowGameStatus] = useState(false);
 
     const handleMove = (move: any) => {
         if (!canMove || needToPromote) { return; }
@@ -51,6 +53,7 @@ export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
         setWinner(chess.getWinner());
         setCanMove(canMove);
         updateMoveCounts(!canMove)
+        setShowGameStatus(chess.getStatus() !== GameStatus.live)
     }
 
     const updateMoveCounts = (playerMoved: boolean) => {
@@ -93,25 +96,35 @@ export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
         makeComputerMove();
     }
 
+    const onGameStatusClosed = () => {
+        setShowGameStatus(false);
+    }
+
     const isPlayerTurn = canMove || needToPromote;
+    const chessBoard = false ? null : 
+        <Chessboard 
+            position={fen}
+            onDrop={(move) => handleMove(move)}
+            orientation={color == WHITE ? "white" : "black"}
+        />;
 
     return (
-        <div>
+        <div className="foreGround">
             <Timer 
                 active={!isPlayerTurn && !winner}
                 numMoves={p2MoveCount}
                 onTimeout={onP2Timeout}
                 timeSettings={props.timeSettings}
             />
-            <Chessboard 
-                position={fen}
-                onDrop={(move) => handleMove(move)}
-                orientation={color == WHITE ? "white" : "black"}
-            />
-            <GameStatusDisplay 
-                winner={winner ?? undefined}
-                gameStatus={gameStatus}
-            />
+            <div className="chessBoard">
+            {chessBoard}
+            </div>
+            <Modal isOpen={showGameStatus} onClose={onGameStatusClosed}>
+                <GameStatusDisplay 
+                    winner={winner ?? undefined}
+                    gameStatus={gameStatus}
+                />
+            </Modal>
             <Timer 
                 active={isPlayerTurn && !winner}
                 numMoves={p1MoveCount}
