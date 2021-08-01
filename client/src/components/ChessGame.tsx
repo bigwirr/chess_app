@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Chessboard from 'chessboardjsx';
 import ChessBrain, { BLACK, Color, MoveSelector, WHITE } from '../chessbrain/ChessBrain';
-import RandomMoveSelector from '../chessbrain/RandomMoveSelector';
 import { GameStatus, GameStatusDisplay } from './GameStatus';
 import PromotionSelector, { PromoteToPiece } from './PromotionSelector';
 import Timer, { TimeSettings } from './Timer';
