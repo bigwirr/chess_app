@@ -5,6 +5,7 @@ export enum GameStatus {
     stalemate = 1,
     draw = 2,
     live = 3,
+    timeout = 4,
 }
 
 export interface GameStatusProps {
@@ -18,11 +19,10 @@ interface DisplayProps {
 
 function CheckmateDisplay(props: DisplayProps) {
     if (!props.winner) { return null; }
-    const winnerStr = props.winner == WHITE ? "White" : "Black";
 
     return (
         <p>
-            {winnerStr + ' wins by checkmate'}
+            {winnerString(props.winner) + ' wins by checkmate.'}
         </p>
     );
 }
@@ -43,6 +43,17 @@ function StalemateDisplay() {
     );
 }
 
+function TimeoutDisplay(props: DisplayProps) {
+    if (!props.winner) { return null; }
+    return (
+        <p>{winnerString(props.winner) + ' wins by timeout.'}</p>
+    );
+}
+
+function winnerString(winner: Color): string {
+    return winner == WHITE ? "White" : "Black";
+}
+
 export function GameStatusDisplay(props: GameStatusProps) {
     let display = null;
     switch(props.gameStatus) {
@@ -54,6 +65,9 @@ export function GameStatusDisplay(props: GameStatusProps) {
             break;
         case GameStatus.stalemate:
             display = StalemateDisplay();
+            break;
+        case GameStatus.timeout:
+            display = TimeoutDisplay({ winner: props.winner });
             break;
     }
 

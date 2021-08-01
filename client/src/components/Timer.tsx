@@ -1,17 +1,30 @@
 import { useEffect, useState } from "react";
 
+export interface TimeSettings {
+    timeInMinutes: number,
+    bonusTime: number,
+}
+
 export interface TimerProps {
-    startTimeMinutes: number,
+    timeSettings: TimeSettings
     active: boolean,
+    onTimeout: () => void,
 }
 
 export default function Timer(props: TimerProps) {
     const [elapsedTime, setElapsedTime] = useState(0);
 
     useEffect(() => {
+        const interval = 10
         if (!props.active) { return; }
         const timer = setInterval(() => {
-          setElapsedTime(elapsedTime + 10);
+            const elapsedTimeNew = elapsedTime + interval
+            if (hasTimedOut(props.timeSettings.timeInMinutes, elapsedTimeNew)) {
+                props.onTimeout();
+                setElapsedTime(minutesToMs(props.timeSettings.timeInMinutes));
+                return;
+            }
+            setElapsedTime(elapsedTime + interval);
         }, 10);
 
         return () => clearInterval(timer);
@@ -19,8 +32,13 @@ export default function Timer(props: TimerProps) {
     );
       
     return (
-        <div>{formatTime(minutesToMs(props.startTimeMinutes) - elapsedTime)}</div>
+        <div>{formatTime(minutesToMs(props.timeSettings.timeInMinutes) - elapsedTime)}</div>
     );
+}
+
+function hasTimedOut(startTimeMinutes: number, elapsedTime: number) {
+    const startTimeMs = minutesToMs(startTimeMinutes);
+    return elapsedTime >= startTimeMs;
 }
 
 function minutesToMs(minutes: number): number {

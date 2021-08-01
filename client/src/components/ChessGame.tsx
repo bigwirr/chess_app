@@ -4,13 +4,17 @@ import ChessBrain, { BLACK, Color, WHITE } from '../chessbrain/ChessBrain';
 import RandomMoveSelector from '../chessbrain/RandomMoveSelector';
 import { GameStatus, GameStatusDisplay } from './GameStatus';
 import PromotionSelector, { PromoteToPiece } from './PromotionSelector';
-import Timer from './Timer';
+import Timer, { TimeSettings } from './Timer';
 
 function randomColor(): Color {
     return Math.floor(Math.random() * (2)) == 0 ? WHITE : BLACK;
 }
 
-export const ChessGame: React.FC = () => {
+export interface ChessGameProps {
+    timeSettings: TimeSettings,
+}
+
+export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
     const [color] = useState<Color>(randomColor());
     const [chess] = useState<ChessBrain>(new ChessBrain(new RandomMoveSelector(), color));
     const [fen, setFen] = useState(chess.getFen());
@@ -70,6 +74,15 @@ export const ChessGame: React.FC = () => {
         handleMoveInner(moveAfterPromotion, piece);
     }
 
+    const onP1Timeout = () => { 
+        chess.loseByTimeout(); 
+        updateGameState(false);
+    };
+    const onP2Timeout = () => { 
+        chess.winByTimeout(); 
+        updateGameState(false);
+    };
+
     const promotionSelector = !needToPromote ? null :
         <PromotionSelector
             onPieceSelected={onPromotionSelected}
@@ -84,8 +97,9 @@ export const ChessGame: React.FC = () => {
     return (
         <div>
             <Timer 
-                startTimeMinutes={10} 
-                active={!isPlayerTurn}
+                active={!isPlayerTurn && !winner}
+                onTimeout={onP2Timeout}
+                timeSettings={props.timeSettings}
             />
             <Chessboard 
                 position={fen}
@@ -97,8 +111,9 @@ export const ChessGame: React.FC = () => {
                 gameStatus={gameStatus}
             />
             <Timer 
-                startTimeMinutes={10}
-                active={isPlayerTurn}
+                active={isPlayerTurn && !winner}
+                onTimeout={onP1Timeout}
+                timeSettings={props.timeSettings}
             />
             {promotionSelector}
         </div>

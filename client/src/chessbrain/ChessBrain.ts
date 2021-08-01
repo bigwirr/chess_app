@@ -134,4 +134,14 @@ export default class ChessBrain {
     private __computerColor(): Color{
         return this.__playerColor == WHITE ? BLACK : WHITE;
     } 
+
+    public winByTimeout() {
+        this.__winner = this.__playerColor;
+        this.__gameStatus = GameStatus.timeout;
+    }
+
+    public loseByTimeout() {
+        this.__winner = this.__computerColor();
+        this.__gameStatus = GameStatus.timeout;
+    }
 }
