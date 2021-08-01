@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Chess, ShortMove } from 'chess.js';
-import { StockfishEngine } from './engine';
+import { StockfishEngine } from '../../../common/src/stockfish/engine';
 
 export const router: Router = Router();
 

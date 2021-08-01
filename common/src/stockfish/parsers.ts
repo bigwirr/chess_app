@@ -1,4 +1,3 @@
-import { strictEqual } from 'assert';
 import * as ChessJs from 'chess.js';
 import { ShortMove, Square } from 'chess.js';
 
