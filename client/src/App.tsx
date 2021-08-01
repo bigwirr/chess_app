@@ -8,7 +8,7 @@ class App extends Component {
   render() { 
     const timeSettings: TimeSettings = {
       timeInMinutes: 10,
-      bonusTime: 0,
+      bonusTimeInSeconds: 5,
     }
 
     return (

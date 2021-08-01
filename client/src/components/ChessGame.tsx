@@ -98,6 +98,7 @@ export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
         <div>
             <Timer 
                 active={!isPlayerTurn && !winner}
+                numMoves={p2MoveCount}
                 onTimeout={onP2Timeout}
                 timeSettings={props.timeSettings}
             />
@@ -112,6 +113,7 @@ export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
             />
             <Timer 
                 active={isPlayerTurn && !winner}
+                numMoves={p1MoveCount}
                 onTimeout={onP1Timeout}
                 timeSettings={props.timeSettings}
             />
