@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import Chessboard from 'chessboardjsx';
-import ChessBrain, { BLACK, Color, WHITE } from '../chessbrain/ChessBrain';
-import RandomMoveSelector from '../chessbrain/RandomMoveSelector';
+import ChessBrain, { BLACK, Color, MoveSelector, WHITE } from '../chessbrain/ChessBrain';
 import { GameStatus, GameStatusDisplay } from './GameStatus';
 import PromotionSelector, { PromoteToPiece } from './PromotionSelector';
 import Timer, { TimeSettings } from './Timer';
 
-function randomColor(): Color {
+export function randomColor(): Color {
     return Math.floor(Math.random() * (2)) == 0 ? WHITE : BLACK;
 }
 
 export interface ChessGameProps {
+    playerColor: Color,
     timeSettings: TimeSettings,
+    moveSelector: MoveSelector,
 }
 
 export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
-    const [color] = useState<Color>(randomColor());
-    const [chess] = useState<ChessBrain>(new ChessBrain(new RandomMoveSelector(), color));
+    const [color] = useState<Color>(props.playerColor);
+    const [chess] = useState<ChessBrain>(new ChessBrain(props.moveSelector, color));
     const [fen, setFen] = useState(chess.getFen());
     const [canMove, setCanMove] = useState(color == WHITE);
     const [gameStatus, setGameStatus] = useState<GameStatus>(GameStatus.live);

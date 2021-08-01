@@ -68,12 +68,7 @@ export default class ChessBrain {
     }
 
     public isValidMove(move: Move, promotion?: PromoteToPiece): boolean {
-        return this.__isValidMove(            
-            {
-                from: move.sourceSquare,
-                to: move.targetSquare,
-                promotion: promotion,
-            });
+        return this.__isValidMove(this.__moveToShortMove(move, promotion));
     }
 
     private __isValidMove(move: ShortMove): boolean {
@@ -82,11 +77,19 @@ export default class ChessBrain {
         return isValid;
     }
 
-    private __moveToShortMove(move: Move): ShortMove {
+    private __validateMoveButDontUpdateState(move: ShortMove): boolean
+    {
+        const tempChess: ChessInstance = new Chess(this.getFen());
+        move.promotion = "q"; // won't be valid move without a promotion.
+        return !!tempChess.move(move);
+    }
+
+    private __moveToShortMove(move: Move, promotion?: PromoteToPiece): ShortMove {
         return {
             from: move.sourceSquare,
             to: move.targetSquare,
-        }
+            promotion: promotion,
+        };
     }
 
     public isPromotion(move: Move): boolean {
@@ -99,12 +102,16 @@ export default class ChessBrain {
             return false;
         }
 
+        let isPromotion = false;
         if (piece?.color === BLACK) {
-            return move.to.charAt(1) === '1';
+            isPromotion = move.to.charAt(1) === '1';
+            return isPromotion && this.__validateMoveButDontUpdateState(move);
         }
         else if (piece?.color === WHITE) {
-            return move.to.charAt(1) === '8';
+            isPromotion = move.to.charAt(1) === '8';
+            return isPromotion && this.__validateMoveButDontUpdateState(move);
         }
+
         return false;
     }
 
