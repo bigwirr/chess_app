@@ -106,14 +106,14 @@ export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
         />;
 
     return (
-        <div className="foreGround">
+        <div>
             <Timer 
                 active={!isPlayerTurn && !winner}
                 numMoves={p2MoveCount}
                 onTimeout={onP2Timeout}
                 timeSettings={props.timeSettings}
             />
-            <div className="chessBoard">
+            <div>
             {chessBoard}
             </div>
             <Modal isOpen={showGameStatus} onClose={onGameStatusClosed}>
