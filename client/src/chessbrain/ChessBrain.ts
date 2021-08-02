@@ -1,13 +1,12 @@
-import {ChessInstance, Piece, ShortMove, Square} from 'chess.js';
+import { ChessInstance, Piece, ShortMove, Square, Chess as ChessClass } from 'chess.js';
 import { GameStatus } from '../components/GameStatus';
 import { PromoteToPiece } from '../components/PromotionSelector';
+const Chess: typeof ChessClass = require("chess.js");
 
 const startingPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-const Chess = require("chess.js");
-
 export interface MoveSelector {
-    getNextMove(fen: string): string | null;
+   getNextMove(fen: string): Promise<ShortMove | null>;
 }
 
 export interface Move {
@@ -53,16 +52,16 @@ export default class ChessBrain {
         return this.__winner;
     }
 
-    public makeNextMove() {
+    public async makeNextMove() {
         if (this.__winner) { return; }
         this.__waitingOnFirstMove = false;
-        const nextMove = this.__nextMoveSelector.getNextMove(this.getFen());
+        const nextMove = await this.__nextMoveSelector.getNextMove(this.getFen());
         if (nextMove) {
             this.__makeMove(nextMove);
         }
     }
 
-    private __makeMove(move: string) {
+    private __makeMove(move: ShortMove) {
         this.__chess.move(move);
         this.__updateGameState(this.__computerColor());
     }

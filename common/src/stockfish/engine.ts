@@ -46,11 +46,6 @@ export class StockfishEngine {
         this.stockfish.onmessage = this.responder.receive;
     }
     
-    //#region region response sequencing
-
-
-    //#endregion
-    
     public async waitForMessage(message: string): Promise<void> {
         await this.waitForMatchingMessage(it => it === message);
     }

@@ -65,12 +65,9 @@ export const ChessGame: React.FC<ChessGameProps> = (props: ChessGameProps) => {
         }
     }
 
-    const makeComputerMove = () => {
-        chess.makeNextMove();
-        setTimeout(() => {
-            updateGameState(true);
-        },
-        300);
+    const makeComputerMove = async () => {
+        await chess.makeNextMove();
+        updateGameState(true);
     }
 
     const onPromotionSelected = (piece: PromoteToPiece) => {
