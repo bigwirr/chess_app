@@ -6,8 +6,6 @@ import PromotionSelector, { PromoteToPiece } from './PromotionSelector';
 import Timer, { TimeSettings } from './Timer';
 import Modal from './Modal';
 import { ForwardBackwardArrows } from './ForwardBackwardArrows';
-import { Chess } from 'chess.js';
-import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 export function randomColor(): Color {
     return Math.floor(Math.random() * (2)) == 0 ? WHITE : BLACK;
@@ -53,12 +51,12 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
             p2MoveCount: 0,
             showGameStatus: false,
             gameHistory: [],
-            gameIndex: -1,
+            gameIndex: 0,
         }
     }
 
     handleMove = (move: any) => {
-        if (this.state.gameIndex !== -1) { return; }
+        if (this.state.gameIndex !== this.state.gameHistory.length) { return; }
         if (!this.state.canMove || this.state.needToPromote) { return; }
         if (this.__chess.isPromotion(move)) {
             this.setState({
@@ -86,7 +84,7 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
 
         this.setState({
             gameHistory: newHistory,
-            gameIndex: -1,
+            gameIndex: newHistory.length,
             fen: this.__chess.getFen(),
             gameStatus: this.__chess.getStatus(),
             winner: this.__chess.getWinner(),
@@ -151,11 +149,11 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
 
     updateGameIndex(step: number) {
         let newGameIndex = this.state.gameIndex + step;
-        if (newGameIndex < -1) {
-            newGameIndex = -1;
+        if (newGameIndex < 0) {
+            newGameIndex = 0;
         }
-        if (newGameIndex >= this.state.gameHistory.length) {
-            newGameIndex = this.state.gameHistory.length-1;
+        if (newGameIndex > this.state.gameHistory.length) {
+            newGameIndex = this.state.gameHistory.length;
         }
 
         this.setState({ gameIndex: newGameIndex });
@@ -177,7 +175,7 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
             this.makeComputerMove();
         }
 
-        const displayFen = this.state.fen;
+        const displayFen = (this.state.gameIndex == this.state.gameHistory.length) ? this.state.fen : this.state.gameHistory[this.state.gameIndex];
 
         return (
             <div>
