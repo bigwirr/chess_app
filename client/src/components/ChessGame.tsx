@@ -89,7 +89,7 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
             gameIndex: -1,
             fen: this.__chess.getFen(),
             gameStatus: this.__chess.getStatus(),
-            winner: this.state.winner,
+            winner: this.__chess.getWinner(),
             canMove: canMove,
             p1MoveCount: p1MoveCount,
             p2MoveCount: p2MoveCount,
