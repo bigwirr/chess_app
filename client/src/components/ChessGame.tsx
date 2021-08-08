@@ -21,7 +21,6 @@ export interface ChessGameProps {
 
 interface ChessGameState {
     color: Color,
-    chess: ChessBrain,
     fen: string,
     canMove: boolean,
     gameStatus: GameStatus,
@@ -36,14 +35,15 @@ interface ChessGameState {
 }
 
 export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
+    private __chess: ChessBrain;
+
     constructor(props: ChessGameProps) {
         super(props);
 
-        const chess = new ChessBrain(props.moveSelector, props.playerColor);
+        this.__chess = new ChessBrain(props.moveSelector, props.playerColor);
         this.state = {
             color: props.playerColor,
-            chess: chess,
-            fen: chess.getFen(),
+            fen: this.__chess.getFen(),
             canMove: props.playerColor == WHITE,
             gameStatus: GameStatus.live,
             winner: null,
@@ -58,8 +58,9 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
     }
 
     handleMove = (move: any) => {
+        if (this.state.gameIndex !== -1) { return; }
         if (!this.state.canMove || this.state.needToPromote) { return; }
-        if (this.state.chess.isPromotion(move)) {
+        if (this.__chess.isPromotion(move)) {
             this.setState({
                 canMove: false,
                 moveAfterPromotion: move,
@@ -71,7 +72,7 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
     }  
 
     handleMoveInner = (move: any, promotion?: PromoteToPiece) => {
-        if (this.state.chess.isValidMove(move, promotion)) {
+        if (this.__chess.isValidMove(move, promotion)) {
             this.updateGameState(false);
             this.makeComputerMove();
         }
@@ -85,14 +86,14 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
 
         this.setState({
             gameHistory: newHistory,
-            gameIndex: newHistory.length-1,
-            fen: this.state.chess.getFen(),
-            gameStatus: this.state.chess.getStatus(),
+            gameIndex: -1,
+            fen: this.__chess.getFen(),
+            gameStatus: this.__chess.getStatus(),
             winner: this.state.winner,
             canMove: canMove,
             p1MoveCount: p1MoveCount,
             p2MoveCount: p2MoveCount,
-            showGameStatus: this.state.chess.getStatus() !== GameStatus.live,
+            showGameStatus: this.__chess.getStatus() !== GameStatus.live,
         });
     }
 
@@ -117,22 +118,22 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
     }
 
     makeComputerMove = async () => {
-        await this.state.chess.makeNextMove();
+        await this.__chess.makeNextMove();
         this.updateGameState(true);
     }
 
     onPromotionSelected = (piece: PromoteToPiece) => {
-        this.setState({ needToPromote: true });
+        this.setState({ needToPromote: false });
         this.handleMoveInner(this.state.moveAfterPromotion, piece);
     }
 
     onP1Timeout = () => { 
-        this.state.chess.loseByTimeout(); 
+        this.__chess.loseByTimeout(); 
         this.updateGameState(false);
     };
 
     onP2Timeout = () => { 
-        this.state.chess.winByTimeout(); 
+        this.__chess.winByTimeout(); 
         this.updateGameState(false);
     };
 
@@ -172,27 +173,26 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
     }
 
     render() {
-        if (this.state.chess.waitingOnFirstMove()) {
+        if (this.__chess.waitingOnFirstMove()) {
             this.makeComputerMove();
         }
 
-        const onDrop = this.state.gameIndex == -1 ? (move: any) => this.handleMove(move) : undefined;
-        const displayFen = this.state.gameIndex == -1 ? this.state.fen : this.state.gameHistory[this.state.gameIndex];
+        const displayFen = this.state.fen;
 
         return (
             <div>
                 <Timer 
                     active={!this.isPlayerTurn() && !this.state.winner}
                     numMoves={this.state.p2MoveCount}
-                    onTimeout={this.onP2Timeout}
+                    onTimeout={() => this.onP2Timeout()}
                     timeSettings={this.props.timeSettings}
                 />
                 <Chessboard 
                     position={displayFen}
-                    onDrop={onDrop}
+                    onDrop={(move: any) => this.handleMove(move)}
                     orientation={this.state.color == WHITE ? "white" : "black"}
                 />
-                <Modal isOpen={this.state.showGameStatus} onClose={this.onGameStatusClosed}>
+                <Modal isOpen={this.state.showGameStatus} onClose={() => this.onGameStatusClosed()}>
                     <GameStatusDisplay 
                         winner={this.state.winner ?? undefined}
                         gameStatus={this.state.gameStatus}
@@ -201,12 +201,12 @@ export class ChessGame extends React.Component<ChessGameProps, ChessGameState> {
                 <Timer 
                     active={this.isPlayerTurn() && !this.state.winner}
                     numMoves={this.state.p1MoveCount}
-                    onTimeout={this.onP1Timeout}
+                    onTimeout={() => this.onP1Timeout()}
                     timeSettings={this.props.timeSettings}
                 />
                 <ForwardBackwardArrows 
-                    onForward={this.onForward} 
-                    onBackward={this.onBackward}
+                    onForward={() => this.onForward()} 
+                    onBackward={() => this.onBackward()}
                     forwardCaption={"Next move"}
                     backwardCaption={"Previous move"}
                 />
